@@ -389,9 +389,6 @@ jobs:
       - revert_migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
           when: on_fail
-      - notify:
-          context: slack-secrets
-
 
   smoke-test:
     executor: python
@@ -504,7 +501,9 @@ workflows:
       - scan-frontend:
           requires:
             - build-frontend
-
+      - notify:
+          context: slack-secrets
+          
       ## INFRASTRUCTURE
       - deploy-infrastructure:
           filters:
