@@ -62,28 +62,7 @@ commands:
           when: << parameters.when >>
 
 jobs:
-  notify:
-    docker:
-      - image: 'cimg/base:stable'
-    steps:
-      - slack/notify:
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [
-                    {
-                      "type": "plain_text",
-                      "text": "*This is a text notification*",
-                      "emoji": true
-                    }
-                  ]
-                }
-              ]
-            }
-          event: always
-
+  
   install-backend-dependencies:
     executor: node
     steps:
@@ -501,8 +480,6 @@ workflows:
       - scan-frontend:
           requires:
             - build-frontend
-      - notify:
-          context: slack-secrets
           
       ## INFRASTRUCTURE
       - deploy-infrastructure:
