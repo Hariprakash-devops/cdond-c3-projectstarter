@@ -1,6 +1,7 @@
 version: 2.1
 
 orbs:
+
   aws-cli: circleci/aws-cli@2.0.3
 #  ------------------------------------------------------------------------------------------------------------------------------------------
 #  defaults (like global variables dubstiuted below)
@@ -97,7 +98,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build          
-        
+             
 
 # -----------------------------  Build back end ----------------------
   build-backend:
@@ -117,7 +118,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-  
+            
 # -----------------------------  Test front end  ----------------------
   test-frontend:
     <<: *dok_node
@@ -139,7 +140,7 @@ jobs:
           path: ./frontend/testres
       - store_artifacts:
           path: ./frontend/testres
-
+      
 
 # -----------------------------  Test back end  ----------------------                
   test-backend:
@@ -162,7 +163,7 @@ jobs:
           path: ./backend/testres
       - store_artifacts:
           path: ./backend/testres
-
+      
 
 # -----------------------------  Test front end for security ----------            
   scan-frontend:
@@ -179,7 +180,7 @@ jobs:
           command: 
             npm i
             npm audit fix --audit-level=critical --force
-
+     
 
 # -----------------------------  Test front end for security ----------            
   scan-backend:
@@ -195,7 +196,7 @@ jobs:
           working_directory: ./backend
           command: 
             npm audit fix --audit-level=critical --force
-
+      
 
 #   -------------------------------------------------------------------------
 #                   AWS  INFRA. PART start from here
@@ -242,7 +243,7 @@ jobs:
             - output.txt
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
+     
 # -----------------------------  aws infra config  ---------------------  
 #                fingerprint taken from ssh of circle ci  
 #  ---------------------------------------------------------------------
@@ -288,7 +289,7 @@ jobs:
             - project/backend
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-               
+                 
 # -----------------------------  migration  -----------------------------------------            
   run-migrations:
     <<: *dok_node
@@ -321,7 +322,7 @@ jobs:
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"                    
       - destroy-environment:          
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
+      
 # -----------------------------  Deployment of app begins here  ---------------------            
 # -----------------------------  Deploy front-end  ----------------------------------
   deploy-frontend:
@@ -368,7 +369,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"     
-
+    
 # -----------------------------  Deploy back-end  ----------------------------------                    
   deploy-backend:
     <<: *dok_ansible
@@ -411,7 +412,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
-
+     
 # -----------------------------  Deploy complete  ----------------------------------
 
 # -----------------------------  start of smoke testing after deployment  ----------------------------
@@ -459,7 +460,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
+    
 
 # -----------------------------  Cloud front distribution  ----------------------------
 
@@ -486,7 +487,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-
+     
   
 # -----------------------------  Clean up the mess dopnt want AWs to charge ----------------------------
   cleanup:
@@ -511,7 +512,7 @@ jobs:
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID:5:7}"
               fi
   
-
+       
 # -------------------------------------------------------------------------------
 #
 #         WORKFLOW  STEPS STARTS FROM HERE
@@ -521,45 +522,45 @@ workflows:
   default:
     jobs:
       - build-frontend:
-          
+
       - build-backend:
-          
+
       - test-frontend:
           requires: [build-frontend]
-          
+
       - test-backend:
           requires: [build-backend]
-          
+
       - scan-frontend:
           requires: [build-frontend]
-          
+
       - scan-backend:
           requires: [build-backend]
-          
+
       - deploy-infrastructure:
           requires: [build-frontend, build-backend, test-frontend, test-backend, scan-frontend, scan-backend]
+
           filters:
             branches:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-          
+
       - run-migrations:
           requires: [configure-infrastructure]
-          
+
       - deploy-backend:
           requires: [run-migrations] 
-          
+
       - deploy-frontend:
           requires: [run-migrations, deploy-backend]
-          
+
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-          
+
       - cloudfront-update:
           requires: [smoke-test]
-          
+
       # - cleanup:
       #     requires: [cloudfront-update]
-      #   
-#  --------------------------  End of Job  ---------------------------------------- 
+      #  --------------------------  End of Job  ----------------------------------------       
