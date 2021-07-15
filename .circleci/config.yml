@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  slack: circleci/slack@4.4.2
   aws-cli: circleci/aws-cli@2.0.3
 #  ------------------------------------------------------------------------------------------------------------------------------------------
 #  defaults (like global variables dubstiuted below)
@@ -18,19 +17,7 @@ docansibl: &dok_ansible
     docker:
       - image: python:3.7-alpine3.11 
 
-slackvarfail: &slack_msg      
-          event: fail
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "fields": [{"type": "plain_text",
-                      "text": "Udapeople build STEP : ${MY_STEP_NAME} Failure #<< pipeline.number >> for << pipeline.project.git_url >> / << pipeline.git.branch >> ",
-                      "emoji": true }]
-                }
-              ]
-            } 
+
 #  ------------------------------------------------------------------------------------------------------------------------------------------
 #  list of parameters
 #  ------------------------------------------------------------------------------------------------------------------------------------------
@@ -110,8 +97,7 @@ jobs:
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-build          
-      - slack/notify: 
-          <<: *slack_msg          
+        
 
 # -----------------------------  Build back end ----------------------
   build-backend:
@@ -131,8 +117,7 @@ jobs:
       - save_cache:
           paths: [backend/node_modules]
           key: backend-build
-      - slack/notify:
-          <<: *slack_msg       
+  
 # -----------------------------  Test front end  ----------------------
   test-frontend:
     <<: *dok_node
@@ -154,8 +139,7 @@ jobs:
           path: ./frontend/testres
       - store_artifacts:
           path: ./frontend/testres
-      - slack/notify:
-          <<: *slack_msg
+
 
 # -----------------------------  Test back end  ----------------------                
   test-backend:
@@ -178,8 +162,7 @@ jobs:
           path: ./backend/testres
       - store_artifacts:
           path: ./backend/testres
-      - slack/notify:
-          <<: *slack_msg
+
 
 # -----------------------------  Test front end for security ----------            
   scan-frontend:
@@ -196,8 +179,7 @@ jobs:
           command: 
             npm i
             npm audit fix --audit-level=critical --force
-      - slack/notify:
-          <<: *slack_msg
+
 
 # -----------------------------  Test front end for security ----------            
   scan-backend:
@@ -213,8 +195,7 @@ jobs:
           working_directory: ./backend
           command: 
             npm audit fix --audit-level=critical --force
-      - slack/notify:
-          <<: *slack_msg
+
 
 #   -------------------------------------------------------------------------
 #                   AWS  INFRA. PART start from here
@@ -261,8 +242,7 @@ jobs:
             - output.txt
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - slack/notify:
-          <<: *slack_msg
+
 # -----------------------------  aws infra config  ---------------------  
 #                fingerprint taken from ssh of circle ci  
 #  ---------------------------------------------------------------------
@@ -308,8 +288,7 @@ jobs:
             - project/backend
       - destroy-environment:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - slack/notify:
-          <<: *slack_msg                
+               
 # -----------------------------  migration  -----------------------------------------            
   run-migrations:
     <<: *dok_node
@@ -342,8 +321,7 @@ jobs:
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID:0:7}"                    
       - destroy-environment:          
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - slack/notify:
-          <<: *slack_msg
+
 # -----------------------------  Deployment of app begins here  ---------------------            
 # -----------------------------  Deploy front-end  ----------------------------------
   deploy-frontend:
@@ -390,8 +368,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"     
-      - slack/notify:
-          <<: *slack_msg 
+
 # -----------------------------  Deploy back-end  ----------------------------------                    
   deploy-backend:
     <<: *dok_ansible
@@ -434,8 +411,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}" 
-      - slack/notify:
-          <<: *slack_msg 
+
 # -----------------------------  Deploy complete  ----------------------------------
 
 # -----------------------------  start of smoke testing after deployment  ----------------------------
@@ -483,8 +459,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - slack/notify:
-          <<: *slack_msg
+
 
 # -----------------------------  Cloud front distribution  ----------------------------
 
@@ -511,8 +486,7 @@ jobs:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
-      - slack/notify:
-          <<: *slack_msg
+
   
 # -----------------------------  Clean up the mess dopnt want AWs to charge ----------------------------
   cleanup:
@@ -537,8 +511,7 @@ jobs:
                 aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID:5:7}"
               fi
   
-        - slack/notify:
-            <<: *slack_msg
+
 # -------------------------------------------------------------------------------
 #
 #         WORKFLOW  STEPS STARTS FROM HERE
@@ -548,46 +521,45 @@ workflows:
   default:
     jobs:
       - build-frontend:
-          context: slack-secrets
+          
       - build-backend:
-          context: slack-secrets
+          
       - test-frontend:
           requires: [build-frontend]
-          context: slack-secrets
+          
       - test-backend:
           requires: [build-backend]
-          context: slack-secrets
+          
       - scan-frontend:
           requires: [build-frontend]
-          context: slack-secrets
+          
       - scan-backend:
           requires: [build-backend]
-          context: slack-secrets
+          
       - deploy-infrastructure:
           requires: [build-frontend, build-backend, test-frontend, test-backend, scan-frontend, scan-backend]
-          context: slack-secrets
           filters:
             branches:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-          context: slack-secrets
+          
       - run-migrations:
           requires: [configure-infrastructure]
-          context: slack-secrets
+          
       - deploy-backend:
           requires: [run-migrations] 
-          context: slack-secrets     
+          
       - deploy-frontend:
           requires: [run-migrations, deploy-backend]
-          context: slack-secrets
+          
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-          context: slack-secrets
+          
       - cloudfront-update:
           requires: [smoke-test]
-          context: slack-secrets      
+          
       # - cleanup:
       #     requires: [cloudfront-update]
-      #     context: slack-secrets
+      #   
 #  --------------------------  End of Job  ---------------------------------------- 
