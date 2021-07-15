@@ -249,46 +249,31 @@ jobs:
 #  ---------------------------------------------------------------------
 
   configure-infrastructure:
-    <<: *dok_ansible
-    environment: 
-      MY_STEP_NAME: "Configure Infrastructure"     
+    executor: python
     steps:
       - checkout
       - add_ssh_keys:
-          fingerprints: ["3a:16:f7:4e:00:8e:d9:eb:8a:1c:0b:b1:3d:e6:43:6f"]
+          fingerprints: ["06:55:19:5c:75:9c:0c:fa:5e:f0:ed:c4:2b:35:ec:76"]
       - attach_workspace:
-          at: ~/
-      - restore_cache:
-          keys: [backend-build]
+          at: .
       - run:
           name: Install dependencies
+          working_directory: ./.circleci/ansible
           command: |
-            apk add --update ansible            
+            apk add --update ansible
+            ansible --version
       - run:
           name: Configure server
+          working_directory: ./.circleci/ansible
           command: |
-            pwd
-            cat .circleci/ansible/inventory.txt
-            echo ENVIRONMENT=production > "backend/.env"            
-            echo TYPEORM_CONNECTION=postgres >> "backend/.env"
-            echo TYPEORM_ENTITIES=./src/modules/domain/**/*.entity.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> "backend/.env"
-            echo TYPEORM_MIGRATIONS_DIR=./src/migrations >> "backend/.env"
-            echo NODE_ENV=production >> "backend/.env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> "backend/.env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> "backend/.env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> "backend/.env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> "backend/.env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> "backend/.env"
-            ansible-playbook -i .circleci/ansible/inventory.txt .circleci/ansible/configure-server.yml            
-            cat backend/.env
-            ls backend
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend
-      - destroy-environment:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+            pwd &&
+            ls -la
+            cat inventory
+            ansible-playbook -i inventory configure-server.yml
+      - destroy_environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+          when: on_fail
+
                  
 # -----------------------------  migration  -----------------------------------------            
   run-migrations:
