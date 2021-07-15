@@ -1,5 +1,11 @@
 version: 2.1
 
+executors:
+  node:
+  python:
+    docker:
+      - image: python:3.9.0-alpine
+
 orbs:
 
   aws-cli: circleci/aws-cli@2.0.3
@@ -270,9 +276,9 @@ jobs:
             ls -la
             cat inventory
             ansible-playbook -i inventory configure-server.yml
-      - destroy_environment:
-          id: ${CIRCLE_WORKFLOW_ID:0:7}
-          when: on_fail
+      - destroy-environment:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+          #when: on_fail
 
                  
 # -----------------------------  migration  -----------------------------------------            
