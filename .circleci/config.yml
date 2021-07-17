@@ -285,6 +285,7 @@ jobs:
             npm run build
             npm run migrations >> migration_output.txt
             cat migration_output.txt    
+            npm audit fix
       - run:
           name: store migration result in memstash
           working_directory: ./backend
@@ -326,6 +327,7 @@ jobs:
             npm run build
             echo "update start"
             npm update
+            npm audit fix
       - run:
           name: Deploy frontend objects to S3
           working_directory: ./frontend
