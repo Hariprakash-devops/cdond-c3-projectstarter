@@ -1,0 +1,14 @@
+Public Url to GitHub repository [URL01]
+https://github.com/Hariprakash-devops/cdond-c3-projectstarter
+
+Public URL for your S3 Bucket [URL02]
+http://udapeople-b6ad570.s3-website.us-east-1.amazonaws.com
+
+Public URL for your CloudFront distribution [URL03]
+http://diuv6wkixqtsw.cloudfront.net/
+
+Public URLs to deployed application back-end in EC2 [URL04]
+https://ec2-44-192-7-204.compute-1.amazonaws.com:3030/
+
+Public URL to your Prometheus Server [URL05]
+http://ec2-44-192-100-161.compute-1.amazonaws.com:9090/targets
