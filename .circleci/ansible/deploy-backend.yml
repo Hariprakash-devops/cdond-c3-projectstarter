@@ -21,4 +21,3 @@
     - TYPEORM_DATABASE: "{{ lookup('env','TYPEORM_DATABASE') }}"
   roles:
     - deploy
-      become: true
