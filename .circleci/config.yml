@@ -362,6 +362,13 @@ jobs:
             pip install awscli
             aws --version
       - run:
+          name: Build backend app
+          command: |
+            cd ../
+            cd backend/ && tar -zcvf ../backend.tar.gz . && cd - 
+            mkdir -p ./.circleci/ansible/roles/deploy/files/
+            mv backend.tar.gz ./.circleci/ansible/roles/deploy/files/
+      - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
           command: |
