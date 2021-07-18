@@ -364,10 +364,12 @@ jobs:
       - run:
           name: Build backend app
           command: |
+            cd ~/project/backend
+            ls
             cd ../
             cd backend/ && tar -zcvf ../backend.tar.gz . && cd - 
-            mkdir -p ./.circleci/ansible/roles/deploy/files/
-            mv backend.tar.gz ./.circleci/ansible/roles/deploy/files/
+            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+            mv backend.tar.gz ~/project/.circleci/ansible/roles/deploy/files/
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
